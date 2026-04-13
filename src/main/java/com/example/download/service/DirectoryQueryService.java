@@ -100,23 +100,14 @@ public class DirectoryQueryService {
     public String buildFullPath(Directory directory, String filename) {
         try {
             List<String> segments = new ArrayList<>();
-            Set<Long> visited = new HashSet<>();
             Directory current = directory;
+            log.info("Building full path for directory={} dirName={} filename={}", directory.getDirSeq(), directory.getDirName(), filename);
 
-            while (current != null) {
-                Long currentDirSeq = current.getDirSeq();
-                if (currentDirSeq != null && !visited.add(currentDirSeq)) {
-                    log.warn("Detected directory cycle while building path dirSeq={}", currentDirSeq);
-                    break;
+            if (current.getDirName() != null && !current.getDirName().isBlank()) {
+                String sanitizedDirName = sanitizePathSegment(current.getDirName());
+                if (!sanitizedDirName.isBlank()) {
+                    segments.add(sanitizedDirName);
                 }
-
-                if (current.getDirName() != null && !current.getDirName().isBlank()) {
-                    String sanitizedDirName = sanitizePathSegment(current.getDirName());
-                    if (!sanitizedDirName.isBlank()) {
-                        segments.add(sanitizedDirName);
-                    }
-                }
-                current = current.getParent();
             }
 
             Collections.reverse(segments);
@@ -125,7 +116,8 @@ public class DirectoryQueryService {
             if (safeFilename.isBlank()) {
                 safeFilename = "unknown-file";
             }
-            segments.add(safeFilename);
+            String[] fileName = safeFilename.split("_");
+            segments.add(fileName[fileName.length - 1]);
 
             String join = String.join("/", segments);
             log.info("Generated full path={}", join);
@@ -169,6 +161,7 @@ public class DirectoryQueryService {
 
     //파일 이름에 허용되지 않는 문자 제거
     private String sanitizePathSegment(String value) {
+        log.info("Sanitizing path segment={}", value);
         if (value == null) {
             return "";
         }

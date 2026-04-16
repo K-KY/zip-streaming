@@ -138,6 +138,7 @@ public class ZipDownloadService {
             Set<String> directoryEntries
     ) throws IOException {
         int searchIndex = 0;
+        log.info("Searching for directory entries for storageKey={}", fullPath);
         while (true) {
             int slashIndex = fullPath.indexOf('/', searchIndex);
             if (slashIndex < 0) {

@@ -103,11 +103,16 @@ public class DirectoryQueryService {
             Directory current = directory;
             log.info("Building full path for directory={} dirName={} filename={}", directory.getDirSeq(), directory.getDirName(), filename);
 
-            if (current.getDirName() != null && !current.getDirName().isBlank()) {
-                String sanitizedDirName = sanitizePathSegment(current.getDirName());
-                if (!sanitizedDirName.isBlank()) {
-                    segments.add(sanitizedDirName);
+            while (current != null) {
+                if (current.getDirName() != null && !current.getDirName().isBlank()) {
+
+                    String sanitizedDirName = sanitizePathSegment(current.getDirName());
+                    log.info("sanitizedDirName={}", sanitizedDirName);
+                    if (!sanitizedDirName.isBlank()) {
+                        segments.add(sanitizedDirName);
+                    }
                 }
+                current = current.getParent();
             }
 
             Collections.reverse(segments);
@@ -120,6 +125,7 @@ public class DirectoryQueryService {
             segments.add(fileName[fileName.length - 1]);
 
             String join = String.join("/", segments);
+            log.info("segment info={}", segments);
             log.info("Generated full path={}", join);
 
             return join;
